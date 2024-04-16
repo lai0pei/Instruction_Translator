@@ -11,19 +11,21 @@ typedef struct
     char *arg;
     OP_SEG_TYPE type;
 } Map;
-SEG_TYPE arg1(void);
+char* arg1(void);
+SEG_TYPE getSeg(void);
 unsigned int arg2(void);
 bool hasMoreLines(void);
-void parser_clean();
+void clean();
 void expression(void);
 CommandType commandType();
 unsigned int  advance(void);
-void parser_init(void);
+void init(void);
 OP_TYPE getOp(void);
 #if DEBUG == 1
 void printOpType(void);
 void printSegType(void);
 void printIndex(void);
 char* getBuff(void);
+bool set_fp(void);
 #endif
 #endif

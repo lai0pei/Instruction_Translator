@@ -1,4 +1,4 @@
-#include "common.h"
+#include "Common.h"
 #include "Parser/Parser.h"
 #include "CodeWriter/CodeWrite.h"
 
@@ -14,34 +14,22 @@ int main(int argc, char *argv[])
     }
 
     FILE_NAME = argv[1];
-    parser_init();
-    code_init();
-    CommandType t;
-    SEG_TYPE s;
-    INDEX_TYPE index;
-    OP_TYPE op;
-    while (hasMoreLines())
+    init();
+    while (set_fp())
     {
-        if (advance() > 0)
+        while (hasMoreLines())
         {
-            expression();
-            t = commandType();
-            s = arg1();
-            index = arg2();
-            op = getOp();
-            if (t != UNDEFINED_COMMAND_TYPE)
+            if (advance() > 0)
             {
-                writePushPop(t, op, s, index);
-            }
-
-            if (op != UNDEFINED_OPTYPE)
-            {
-                writeArithematic(op);
+                expression();
+                printOpType();
+                // printSegType();
+                // printIndex();
+                translate_instruction();
             }
         }
     }
     end_line();
-    parser_clean();
-    code_clean();
+    clean();
     return 1;
 }

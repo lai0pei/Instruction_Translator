@@ -1,36 +1,16 @@
-#include "../common.h"
-#include "./Parser.h"
+#include "../Common.h"
+#include "Parser.h"
+#include "Helper.h"
 #include "../CodeWriter/CodeWrite.h"
 
-
-#define CHAR_STACK 50
-#define OP_COUNT 11
+#define CHAR_STACK 20
+#define OP_COUNT 17
 #define SEG_COUNT 8
+#define FILE_SIZE 256
 #define __ERROR(S)                         \
     fprintf(stderr, "%s. %s \n", S, BUFF); \
+    clean();                               \
     exit(0);
-
-extern char* FILE_NAME;
-static CommandType TYPE;
-static OP_TYPE Op;
-static SEG_TYPE Seg;
-
-
-static FILE *FP;
-static char *BUFF;
-static char *VAR = NULL;
-static char BUFF_COUNT = 0;
-static char INDEX = 0;
-static bool EOL = false;
-static unsigned int ARG2;
-
-
-static void __operation(void);
-static void __segment(void);
-static void __index(void);
-static void __next(void);
-static void __file_constructor(void);
-
 
 static Map OPERATION[OP_COUNT] = {
     {"push", .type.op = PUSH},
@@ -43,7 +23,13 @@ static Map OPERATION[OP_COUNT] = {
     {"lt", .type.op = LT},
     {"and", .type.op = AND},
     {"or", .type.op = OR},
-    {"not", .type.op = NOT}};
+    {"not", .type.op = NOT},
+    {"function", .type.op = FN},
+    {"label", .type.op = LABEL},
+    {"call", .type.op = CALL},
+    {"return", .type.op = RETURN},
+    {"goto", .type.op = GOTO},
+    {"if-goto", .type.op = IF_GOTO}};
 
 static Map SEGMENT[SEG_COUNT] = {
     {"constant", .type.seg = CONSTANT},
@@ -55,102 +41,138 @@ static Map SEGMENT[SEG_COUNT] = {
     {"that", .type.seg = THAT},
     {"pointer", .type.seg = POINTER}};
 
+static CommandType TYPE;
+static OP_TYPE Op;
+static SEG_TYPE Seg;
+
+static FILE *FP;
+static char *BUFF;
+static char *VAR = NULL;
+static char BUFF_COUNT = 0;
+static bool EOL = false;
+static unsigned int ARG2;
+static char *ARG1 = NULL;
+static char *TOK;
+static List *FILE_LIST = NULL;
+static char *__DIR = NULL;
+static char *FILE_PATH = NULL;
+static char *TOKEN = NULL;
+
+static void __operation(void);
+static void __segment(void);
+static void __index(void);
+static void __next(void);
+
 bool hasMoreLines(void)
 {
     return !EOL;
 }
 
-void __file_constructor(void){
-    FP = fopen(FILE_NAME,"r");
-    if(FP == NULL){
-        perror("");
-        exit(0);
-    }
-}
-
-void parser_init(void)
+void init(void)
 {
-    __file_constructor();
+
+    get_file_stat();
+
     BUFF = (char *)malloc(sizeof(char) * BUFF_LEN);
-    if (BUFF == NULL)
+    if (!BUFF)
     {
         perror("Buffer allocation failed!");
+        clean();
         exit(0);
     }
     memset(BUFF, 0, BUFF_LEN);
-    VAR = (char *)malloc(sizeof(char) * CHAR_STACK);
-    if (BUFF == NULL)
+
+    ARG1 = (char *)malloc(sizeof(char) * CHAR_STACK);
+    if (!ARG1)
     {
-        perror("Char Stack allocation failed!");
+        perror("Buffer allocation failed!");
+        clean();
         exit(0);
     }
-    EOL = false;
+    memset(ARG1, 0, CHAR_STACK);
+    FILE_LIST = get_list();
+    __DIR = get_dir();
+    FILE_PATH = (char *)malloc(FILE_SIZE);
+    VAR = (char *)malloc(CHAR_STACK);
+    code_init();
 }
 
+bool set_fp()
+{
+    if (FILE_LIST)
+    {
+        memset(FILE_PATH, 0, FILE_SIZE);
+        memcpy(FILE_PATH, __DIR, strlen(__DIR));
+        if (FP)
+        {
+            file_free(FP);
+        }
 
+        FP = fopen(strcat(FILE_PATH, FILE_LIST->name), "r");
+        if (!FP)
+        {
+            perror("");
+            clean();
+            exit(0);
+        }
+        FILE_LIST = FILE_LIST->next;
+        EOL = false;
+        return true;
+    }
+    return false;
+}
 
 unsigned int advance(void)
 {
-
     BUFF_COUNT = 0;
-    INDEX = 0;
     ARG2 = 0;
+    bool is_char = false;
     Op = UNDEFINED_OPTYPE;
     TYPE = UNDEFINED_COMMAND_TYPE;
     Seg = UNDEFINED_SEG_TYPE;
-    memset(VAR, '\0', CHAR_STACK);
     memset(BUFF, 0, BUFF_LEN);
-
+    memset(ARG1, 0, CHAR_STACK);
+    TOK = BUFF;
+    TOKEN = NULL;
     int m = 0;
     unsigned int t = 0;
-    bool is_space = true;
     bool is_comment = false;
 
     while ((m = fgetc(FP)) != '\n')
     {
-
         if (m == EOF)
         {
             EOL = true;
             break;
         }
 
-        if (is_comment || (m == '/' && fgetc(FP) == '/'))
+        if (!isspace(m))
+        {
+            is_char = true;
+        }
+
+        if (m == '/' && fgetc(FP) == '/')
         {
             is_comment = true;
-            t = 0;
             continue;
         }
 
-        if (isalnum(m))
+        if (!is_char || is_comment)
         {
-            is_space = false;
+            continue;
         }
 
         if (BUFF_COUNT > BUFF_LEN)
         {
             fprintf(stderr, "Max allowed char per line is %d\n", BUFF_LEN);
+            clean();
             exit(0);
         }
-
         BUFF[t] = m;
         BUFF_COUNT++;
         t++;
     }
-    if (is_space)
-        t = 0;
-
     return t;
-}
-
-void parser_clean(void){
-    free(BUFF);
-    fclose(FP);
-}
-
-CommandType commandType(void)
-{
-    return TYPE;
 }
 
 void expression()
@@ -168,7 +190,7 @@ void __operation()
 
     while (t < OP_COUNT)
     {
-        if (strcmp(VAR, OPERATION[t].arg) == 0)
+        if (!strcmp(VAR, OPERATION[t].arg))
         {
             Op = OPERATION[t].type.op;
             break;
@@ -195,6 +217,24 @@ void __operation()
     case SUB:
         TYPE = C_ARITHEMATIC;
         break;
+    case FN:
+        TYPE = C_FUNCTION;
+        break;
+    case LABEL:
+        TYPE = C_LABEL;
+        break;
+    case CALL:
+        TYPE = C_CALL;
+        break;
+    case RETURN:
+        TYPE = C_RETURN;
+        break;
+    case GOTO:
+        TYPE = C_GOTO;
+        break;
+    case IF_GOTO:
+        TYPE = C_IF;
+        break;
     }
 }
 
@@ -206,14 +246,14 @@ void __segment()
         __next();
         char t = 0;
 
-        if (strlen(VAR) == 0)
+        if (!strlen(VAR))
         {
-            __ERROR("No segment and index found! ")
+            __ERROR("No segment found! ")
         }
 
         while (t < SEG_COUNT)
         {
-            if (strcmp(VAR, SEGMENT[t].arg) == 0)
+            if (!strcmp(VAR, SEGMENT[t].arg))
             {
                 Seg = SEGMENT[t].type.seg;
                 break;
@@ -223,19 +263,36 @@ void __segment()
 
         if (t >= SEG_COUNT)
         {
-            __ERROR("Unsported Segment ")
+            __ERROR("Unsupported Segment")
         }
+    }
 
+    if (Op == LABEL)
+    {
+        __next();
+        strcpy(ARG1, VAR);
+    }
+
+    if (Op == FN)
+    {
+        __next();
+        strcpy(ARG1, VAR);
+    }
+
+    if (Op == CALL)
+    {
+        __next();
+        strcpy(ARG1, VAR);
     }
 }
 
 void __index()
 {
-    if (Op == PUSH || Op == POP)
+    if (Op == PUSH || Op == POP || Op == FN || Op == CALL)
     {
         __next();
 
-        if (strlen(VAR) == 0)
+        if (!strlen(VAR))
         {
             __ERROR("No index found! ")
         }
@@ -252,13 +309,43 @@ void __index()
     }
 }
 
-SEG_TYPE arg1(void)
+void __next(void)
+{
+    memset(VAR, 0, CHAR_STACK);
+    TOKEN = strtok(TOK, " ");
+
+    TOK = NULL;
+    char t = 0;
+
+    while (*TOKEN != '\0')
+    {
+        if (!isspace(*TOKEN))
+        {
+            VAR[t] = *TOKEN;
+            t++;
+        }
+        TOKEN++;
+    }
+}
+
+SEG_TYPE getSeg(void)
 {
     return Seg;
 }
 
-OP_TYPE getOp(){
+char *arg1(void)
+{
+    return ARG1;
+}
+
+OP_TYPE getOp()
+{
     return Op;
+}
+
+CommandType commandType(void)
+{
+    return TYPE;
 }
 
 unsigned int arg2()
@@ -266,18 +353,21 @@ unsigned int arg2()
     return ARG2;
 }
 
-void __next(void)
+void clean(void)
 {
-    char temporary_index = 0;
-    memset(VAR, 0, CHAR_STACK);
+    mem_free(BUFF);
+    mem_free(FILE_PATH);
+    mem_free(ARG1);
+    mem_free(VAR);
+    free_list();
+    if (FP)
+        file_free(FP);
+    code_clean();
+}
 
-    while (INDEX < BUFF_COUNT && isspace(BUFF[INDEX]) == 0)
-    {
-        VAR[temporary_index] = BUFF[INDEX];
-        INDEX++;
-        temporary_index++;
-    }
-    INDEX++;
+char *getBuff(void)
+{
+    return BUFF;
 }
 
 #if DEBUG == 1
@@ -319,6 +409,24 @@ void printOpType(void)
     case NOT:
         strcpy(c, "NOT");
         break;
+    case FN:
+        strcpy(c, "FN");
+        break;
+    case LABEL:
+        strcpy(c, "LABEL");
+        break;
+    case CALL:
+        strcpy(c, "CALL");
+        break;
+    case RETURN:
+        strcpy(c, "RETURN");
+        break;
+    case GOTO:
+        strcpy(c, "GOTO");
+        break;
+    case IF_GOTO:
+        strcpy(c, "IF_GOTO");
+        break;
     }
     printf("%s ", c);
     memset(c, ' ', 10);
@@ -326,7 +434,7 @@ void printOpType(void)
 
 void printSegType(void)
 {
-    char c[10] = {};
+    char c[20] = {};
     switch (Seg)
     {
     case CONSTANT:
@@ -361,16 +469,21 @@ void printSegType(void)
         strcpy(c, "STATIC");
         break;
     }
+
+    if (Op == LABEL || Op == FN || Op == CALL)
+    {
+        strcpy(c, ARG1);
+    }
     printf("%s ", c);
-    memset(c, ' ', 10);
+    memset(c, ' ', 20);
 }
 
 void printIndex(void)
 {
-    printf("%d \n", ARG2);
+    if (Op == PUSH || Op == POP || Op == FN || Op == CALL)
+        printf("%d", ARG2);
+
+    printf("\n");
 }
 
-char* getBuff(void){
-    return BUFF;
-}
 #endif
