@@ -6,7 +6,7 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <errno.h>
-#define DEBUG 1
+#include DEBUG_HEADER
 typedef enum
 {
     C_ARITHEMATIC,

@@ -9,8 +9,7 @@
 #define FILE_SIZE 256
 #define __ERROR(S)                         \
     fprintf(stderr, "%s. %s \n", S, BUFF); \
-    clean();                               \
-    exit(0);
+    __exit(0);
 
 static Map OPERATION[OP_COUNT] = {
     {"push", .type.op = PUSH},
@@ -47,7 +46,9 @@ static SEG_TYPE Seg;
 
 static FILE *FP;
 static char *BUFF;
+static char *COMMENT;
 static char *VAR = NULL;
+static char *FILE_NAME = NULL;
 static char BUFF_COUNT = 0;
 static bool EOL = false;
 static unsigned int ARG2;
@@ -63,6 +64,12 @@ static void __segment(void);
 static void __index(void);
 static void __next(void);
 
+static void __exit(int type)
+{
+    clean();
+    exit(type);
+}
+
 bool hasMoreLines(void)
 {
     return !EOL;
@@ -77,19 +84,33 @@ void init(void)
     if (!BUFF)
     {
         perror("Buffer allocation failed!");
-        clean();
-        exit(0);
+        __exit(0);
     }
-    memset(BUFF, 0, BUFF_LEN);
+
+    COMMENT = (char *)malloc(sizeof(char) * BUFF_LEN);
+    if (!COMMENT)
+    {
+        perror("Buffer allocation failed!");
+        __exit(0);
+    }
+    memset(COMMENT, 0, BUFF_LEN);
 
     ARG1 = (char *)malloc(sizeof(char) * CHAR_STACK);
     if (!ARG1)
     {
         perror("Buffer allocation failed!");
-        clean();
-        exit(0);
+        __exit(0);
     }
     memset(ARG1, 0, CHAR_STACK);
+
+    FILE_NAME = (char *)malloc(sizeof(char) * CHAR_STACK);
+    if (!FILE_NAME)
+    {
+        perror("Buffer allocation failed!");
+        __exit(0);
+    }
+    memset(FILE_NAME, 0, CHAR_STACK);
+
     FILE_LIST = get_list();
     __DIR = get_dir();
     FILE_PATH = (char *)malloc(FILE_SIZE);
@@ -103,6 +124,7 @@ bool set_fp()
     {
         memset(FILE_PATH, 0, FILE_SIZE);
         memcpy(FILE_PATH, __DIR, strlen(__DIR));
+   
         if (FP)
         {
             file_free(FP);
@@ -112,14 +134,20 @@ bool set_fp()
         if (!FP)
         {
             perror("");
-            clean();
-            exit(0);
+            __exit(0);
         }
+        memset(FILE_NAME, 0, CHAR_STACK);
+        strcpy(FILE_NAME,FILE_LIST->name);
+        strtok(FILE_NAME,".");
         FILE_LIST = FILE_LIST->next;
         EOL = false;
         return true;
     }
     return false;
+}
+
+char* getFileName(){
+    return FILE_NAME;
 }
 
 unsigned int advance(void)
@@ -132,8 +160,8 @@ unsigned int advance(void)
     Seg = UNDEFINED_SEG_TYPE;
     memset(BUFF, 0, BUFF_LEN);
     memset(ARG1, 0, CHAR_STACK);
+    memset(COMMENT, 0, BUFF_LEN);
     TOK = BUFF;
-    TOKEN = NULL;
     int m = 0;
     unsigned int t = 0;
     bool is_comment = false;
@@ -165,13 +193,13 @@ unsigned int advance(void)
         if (BUFF_COUNT > BUFF_LEN)
         {
             fprintf(stderr, "Max allowed char per line is %d\n", BUFF_LEN);
-            clean();
-            exit(0);
+            __exit(0);
         }
         BUFF[t] = m;
         BUFF_COUNT++;
         t++;
     }
+    strcpy(COMMENT,BUFF);
     return t;
 }
 
@@ -203,39 +231,79 @@ void __operation()
         __ERROR("Unspported Operation ")
     }
 
-    switch (Op)
+    if (Op == PUSH)
     {
-    case PUSH:
-        TYPE = C_PUSH;
-        break;
-    case POP:
-        TYPE = C_POP;
-        break;
-    case ADD:
-        TYPE = C_ARITHEMATIC;
-        break;
-    case SUB:
-        TYPE = C_ARITHEMATIC;
-        break;
-    case FN:
-        TYPE = C_FUNCTION;
-        break;
-    case LABEL:
-        TYPE = C_LABEL;
-        break;
-    case CALL:
-        TYPE = C_CALL;
-        break;
-    case RETURN:
-        TYPE = C_RETURN;
-        break;
-    case GOTO:
-        TYPE = C_GOTO;
-        break;
-    case IF_GOTO:
-        TYPE = C_IF;
-        break;
     }
+
+    if (Op == PUSH)
+    {
+        TYPE = C_PUSH;
+        goto Label;
+    }
+
+    if (Op == POP)
+    {
+        TYPE = C_POP;
+        goto Label;
+    }
+
+    if (Op == POP)
+    {
+        TYPE = C_POP;
+        goto Label;
+    }
+
+    if (Op == POP)
+    {
+        TYPE = C_POP;
+        goto Label;
+    }
+
+    if (Op == ADD || Op == SUB || Op == NEG || Op == EQ || Op == GT || Op == LT || Op == AND || Op == OR || Op == NOT)
+    {
+        TYPE = C_ARITHEMATIC;
+        goto Label;
+    }
+
+    if (Op == FN)
+    {
+        TYPE = C_FUNCTION;
+        goto Label;
+    }
+
+    if (Op == LABEL)
+    {
+        TYPE = C_LABEL;
+        goto Label;
+    }
+
+    if (Op == CALL)
+    {
+        TYPE = C_CALL;
+        goto Label;
+    }
+
+    if (Op == RETURN)
+    {
+        TYPE = C_RETURN;
+        goto Label;
+    }
+
+    if (Op == GOTO)
+    {
+        TYPE = C_GOTO;
+        goto Label;
+    }
+
+    if (Op == IF_GOTO)
+    {
+        TYPE = C_IF;
+        goto Label;
+    }
+
+    fprintf(stderr, "Unknown Operation \n");
+    __exit(0);
+Label:
 }
 
 void __segment()
@@ -267,19 +335,7 @@ void __segment()
         }
     }
 
-    if (Op == LABEL)
-    {
-        __next();
-        strcpy(ARG1, VAR);
-    }
-
-    if (Op == FN)
-    {
-        __next();
-        strcpy(ARG1, VAR);
-    }
-
-    if (Op == CALL)
+    if (Op == LABEL || Op == FN || Op == CALL || Op == GOTO || Op == IF_GOTO)
     {
         __next();
         strcpy(ARG1, VAR);
@@ -317,7 +373,7 @@ void __next(void)
     TOK = NULL;
     char t = 0;
 
-    while (*TOKEN != '\0')
+    while (TOKEN && *TOKEN != '\0')
     {
         if (!isspace(*TOKEN))
         {
@@ -359,6 +415,8 @@ void clean(void)
     mem_free(FILE_PATH);
     mem_free(ARG1);
     mem_free(VAR);
+    mem_free(COMMENT);
+    mem_free(FILE_NAME);
     free_list();
     if (FP)
         file_free(FP);
@@ -367,7 +425,7 @@ void clean(void)
 
 char *getBuff(void)
 {
-    return BUFF;
+    return COMMENT;
 }
 
 #if DEBUG == 1

@@ -21,11 +21,10 @@ CommandType commandType();
 unsigned int  advance(void);
 void init(void);
 OP_TYPE getOp(void);
-#if DEBUG == 1
+char* getBuff(void);
+char* getFileName(void);
+bool set_fp(void);
 void printOpType(void);
 void printSegType(void);
 void printIndex(void);
-char* getBuff(void);
-bool set_fp(void);
-#endif
 #endif

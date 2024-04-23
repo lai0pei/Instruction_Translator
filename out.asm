@@ -1,3 +1,4 @@
+//boostrapping
 @256
 D=A
 @R0
@@ -18,475 +19,564 @@ M=D
 D=A
 @R4
 M=D
-// push constant 17
-@17        
+//function Sys.init 0
+(Sys.init)
+//push constant 4000	
+@4000
 D=A
 @R0
 A=M
 M=D
 @R0
 M=M+1
-// push constant 17
-@17        
-D=A
+//pop pointer 0
 @R0
-A=M
-M=D
-@R0
-M=M+1
-// eq
-@R0
-A=M
-A=A-1
+A=M-1
 D=M
-A=A-1
-D=M-D
-@nm_0
-D;JNE
-@R0
-A=M
-A=A-1
-A=A-1
-M=-1
-@nm_1
-0;JMP
-(nm_0)
-@R0
-A=M
-A=A-1
-A=A-1
-M=0
-(nm_1)
+@R3
+M=D
 @R0
 M=M-1
-// push constant 17
-@17        
+//push constant 5000
+@5000
 D=A
 @R0
 A=M
 M=D
 @R0
 M=M+1
-// push constant 16
-@16        
-D=A
+//pop pointer 1
 @R0
-A=M
-M=D
-@R0
-M=M+1
-// eq
-@R0
-A=M
-A=A-1
+A=M-1
 D=M
-A=A-1
-D=M-D
-@nm_2
-D;JNE
-@R0
-A=M
-A=A-1
-A=A-1
-M=-1
-@nm_3
-0;JMP
-(nm_2)
-@R0
-A=M
-A=A-1
-A=A-1
-M=0
-(nm_3)
+@R4
+M=D
 @R0
 M=M-1
-// push constant 16
-@16        
+//call Sys.main 0
+//generate return address
+@Sys.init$ret.1
 D=A
 @R0
 A=M
 M=D
 @R0
 M=M+1
-// push constant 17
-@17        
-D=A
-@R0
-A=M
-M=D
-@R0
-M=M+1
-// eq
-@R0
-A=M
-A=A-1
+//saved local
+@R1
 D=M
-A=A-1
+@R0
+A=M
+M=D
+@R0
+M=M+1
+//saved argument
+@R2
+D=M
+@R0
+A=M
+M=D
+@R0
+M=M+1
+//saved this
+@R3
+D=M
+@R0
+A=M
+M=D
+@R0
+M=M+1
+//saved that
+@R4
+D=M
+@R0
+A=M
+M=D
+@R0
+M=M+1
+//reposition argument
+@5
+D=A
+@R0
 D=M-D
-@nm_4
-D;JNE
+@R2
+M=D
+//saved stack to local
 @R0
-A=M
-A=A-1
-A=A-1
-M=-1
-@nm_5
+D=M
+@R1
+M=D
+//call the function
+@Sys.main
 0;JMP
-(nm_4)
+//return address
+(Sys.init$ret.1)
+//pop temp 1
+@5
+D=A
+@1
+D=D+A
+@R14
+M=D
 @R0
+A=M-1
+D=M
+@R14
 A=M
-A=A-1
-A=A-1
-M=0
-(nm_5)
+M=D
 @R0
 M=M-1
-// push constant 892
-@892       
-D=A
-@R0
-A=M
-M=D
-@R0
-M=M+1
-// push constant 891
-@891       
-D=A
-@R0
-A=M
-M=D
-@R0
-M=M+1
-// lt
-@R0
-A=M
-A=A-1
-D=M
-A=A-1
-D=M-D
-@nm_6
-D;JGE
-@R0
-A=M
-A=A-1
-A=A-1
-M=-1
-@nm_7
+//label LOOP
+(Sys.init$LOOP)
+//goto LOOP
+@Sys.init$LOOP
 0;JMP
-(nm_6)
+//function Sys.main 5
+(Sys.main)
+@0
+D=A
+@R1
+A=M+D
+M=0
+@1
+D=A
+@R1
+A=M+D
+M=0
+@2
+D=A
+@R1
+A=M+D
+M=0
+@3
+D=A
+@R1
+A=M+D
+M=0
+@4
+D=A
+@R1
+A=M+D
+M=0
+//push constant 4001
+@4001
+D=A
 @R0
 A=M
-A=A-1
-A=A-1
-M=0
-(nm_7)
+M=D
+@R0
+M=M+1
+//pop pointer 0
+@R0
+A=M-1
+D=M
+@R3
+M=D
 @R0
 M=M-1
-// push constant 891
-@891       
+//push constant 5001
+@5001
 D=A
 @R0
 A=M
 M=D
 @R0
 M=M+1
-// push constant 892
-@892       
-D=A
+//pop pointer 1
 @R0
-A=M
-M=D
-@R0
-M=M+1
-// lt
-@R0
-A=M
-A=A-1
+A=M-1
 D=M
-A=A-1
-D=M-D
-@nm_8
-D;JGE
-@R0
-A=M
-A=A-1
-A=A-1
-M=-1
-@nm_9
-0;JMP
-(nm_8)
-@R0
-A=M
-A=A-1
-A=A-1
-M=0
-(nm_9)
+@R4
+M=D
 @R0
 M=M-1
-// push constant 891
-@891       
+//push constant 200
+@200
 D=A
 @R0
 A=M
 M=D
 @R0
 M=M+1
-// push constant 891
-@891       
-D=A
+//pop local 1
 @R0
-A=M
-M=D
-@R0
-M=M+1
-// lt
-@R0
-A=M
-A=A-1
+A=M-1
 D=M
-A=A-1
-D=M-D
-@nm_10
-D;JGE
-@R0
-A=M
-A=A-1
-A=A-1
-M=-1
-@nm_11
-0;JMP
-(nm_10)
-@R0
-A=M
-A=A-1
-A=A-1
-M=0
-(nm_11)
 @R0
 M=M-1
-// push constant 32767
-@32767     
+@Sys.main$local.1
+M=D
+//push constant 40
+@40
 D=A
 @R0
 A=M
 M=D
 @R0
 M=M+1
-// push constant 32766
-@32766     
-D=A
+//pop local 2
 @R0
-A=M
-M=D
-@R0
-M=M+1
-// gt
-@R0
-A=M
-A=A-1
+A=M-1
 D=M
-A=A-1
-D=M-D
-@nm_12
-D;JLE
-@R0
-A=M
-A=A-1
-A=A-1
-M=-1
-@nm_13
-0;JMP
-(nm_12)
-@R0
-A=M
-A=A-1
-A=A-1
-M=0
-(nm_13)
 @R0
 M=M-1
-// push constant 32766
-@32766     
+@Sys.main$local.2
+M=D
+//push constant 6
+@6
 D=A
 @R0
 A=M
 M=D
 @R0
 M=M+1
-// push constant 32767
-@32767     
-D=A
+//pop local 3
 @R0
-A=M
-M=D
-@R0
-M=M+1
-// gt
-@R0
-A=M
-A=A-1
+A=M-1
 D=M
-A=A-1
-D=M-D
-@nm_14
-D;JLE
-@R0
-A=M
-A=A-1
-A=A-1
-M=-1
-@nm_15
-0;JMP
-(nm_14)
-@R0
-A=M
-A=A-1
-A=A-1
-M=0
-(nm_15)
 @R0
 M=M-1
-// push constant 32766
-@32766     
+@Sys.main$local.3
+M=D
+//push constant 123
+@123
 D=A
 @R0
 A=M
 M=D
 @R0
 M=M+1
-// push constant 32766
-@32766     
+//call Sys.add12 1
+//generate return address
+@Sys.main$ret.2
 D=A
 @R0
 A=M
 M=D
 @R0
 M=M+1
-// gt
-@R0
-A=M
-A=A-1
+//saved local
+@R1
 D=M
-A=A-1
+@R0
+A=M
+M=D
+@R0
+M=M+1
+//saved argument
+@R2
+D=M
+@R0
+A=M
+M=D
+@R0
+M=M+1
+//saved this
+@R3
+D=M
+@R0
+A=M
+M=D
+@R0
+M=M+1
+//saved that
+@R4
+D=M
+@R0
+A=M
+M=D
+@R0
+M=M+1
+//reposition argument
+@6
+D=A
+@R0
 D=M-D
-@nm_16
-D;JLE
+@R2
+M=D
+//saved stack to local
 @R0
-A=M
-A=A-1
-A=A-1
-M=-1
-@nm_17
+D=M
+@R1
+M=D
+//call the function
+@Sys.add12
 0;JMP
-(nm_16)
+//return address
+(Sys.main$ret.2)
+//pop temp 0
+@5
+D=A
+@0
+D=D+A
+@R14
+M=D
 @R0
+A=M-1
+D=M
+@R14
 A=M
-A=A-1
-A=A-1
-M=0
-(nm_17)
+M=D
 @R0
 M=M-1
-// push constant 57
-@57        
-D=A
-@R0
-A=M
-M=D
-@R0
-M=M+1
-// push constant 31
-@31        
-D=A
-@R0
-A=M
-M=D
-@R0
-M=M+1
-// push constant 53
-@53        
-D=A
-@R0
-A=M
-M=D
-@R0
-M=M+1
-// add
-// add
-@R0
-A=M
-A=A-1
-A=A-1
+//push local 0
+@Sys.main$local
 D=M
-A=A+1
+@R0
+A=M
+M=D
+@R0
+M=M+1
+//push local 1
+@Sys.main$local.1
+D=M
+@R0
+A=M
+M=D
+@R0
+M=M+1
+//push local 2
+@Sys.main$local.2
+D=M
+@R0
+A=M
+M=D
+@R0
+M=M+1
+//push local 3
+@Sys.main$local.3
+D=M
+@R0
+A=M
+M=D
+@R0
+M=M+1
+//push local 4
+@Sys.main$local.4
+D=M
+@R0
+A=M
+M=D
+@R0
+M=M+1
+//add
+@R0
+A=M-1
+D=M
+A=A-1
 D=D+M
-A=A-1
 M=D
 @R0
 M=M-1
-// push constant 112
-@112       
+//add
+@R0
+A=M-1
+D=M
+A=A-1
+D=D+M
+M=D
+@R0
+M=M-1
+//add
+@R0
+A=M-1
+D=M
+A=A-1
+D=D+M
+M=D
+@R0
+M=M-1
+//add
+@R0
+A=M-1
+D=M
+A=A-1
+D=D+M
+M=D
+@R0
+M=M-1
+//return
+//saved frame pointer to temp variable
+@R1
+D=M
+@Sys.main$frame_pointer
+M=D
+//saved return address to temp variable
+@5
+D=A
+@Sys.main$frame_pointer
+A=M-D
+D=M
+@Sys.main$retAddr
+M=D
+//save return value
+@R0
+A=M-1
+D=M
+@R2
+A=M
+M=D
+//restore stack pointer
+@R2
+D=M+1
+@R0
+M=D
+//restore that pointer
+@Sys.main$frame_pointer
+A=M-1
+D=M
+@R4
+M=D
+//restore this pointer
+@2
+D=A
+@Sys.main$frame_pointer
+A=M-D
+D=M
+@R3
+M=D
+//restore arg pointer
+@3
+D=A
+@Sys.main$frame_pointer
+A=M-D
+D=M
+@R2
+M=D
+//restore lcl pointer
+@4
+D=A
+@Sys.main$frame_pointer
+A=M-D
+D=M
+@R1
+M=D
+//return
+@Sys.main$retAddr
+A=M
+0;JMP
+//function Sys.add12 0
+(Sys.add12)
+//push constant 4002
+@4002
 D=A
 @R0
 A=M
 M=D
 @R0
 M=M+1
-// sub
-// sub
-@R0
-A=M
-A=A-1
-A=A-1
-D=M
-A=A+1
-D=D-M
-A=A-1
-M=D
-@R0
-M=M-1
-// neg
+//pop pointer 0
 @R0
 A=M-1
-D=-M
-M=D
-// and
-@R0
-A=M
-A=A-1
-A=A-1
 D=M
-A=A+1
-D=D&M
-A=A-1
+@R3
 M=D
 @R0
 M=M-1
-// push constant 82
-@82        
+//push constant 5002
+@5002
 D=A
 @R0
 A=M
 M=D
 @R0
 M=M+1
-// or
+//pop pointer 1
 @R0
-A=M
-A=A-1
-A=A-1
+A=M-1
 D=M
-A=A+1
-D=D|M
-A=A-1
+@R4
 M=D
 @R0
 M=M-1
-// not
+//push argument 0
+@R2
+D=M
+@0
+A=D+A
+D=M
+@R0
+A=M
+M=D
+@R0
+M=M+1
+//push constant 12
+@12
+D=A
+@R0
+A=M
+M=D
+@R0
+M=M+1
+//add
 @R0
 A=M-1
-D=!M
+D=M
+A=A-1
+D=D+M
 M=D
+@R0
+M=M-1
+//return
+//saved frame pointer to temp variable
+@R1
+D=M
+@Sys.add12$frame_pointer
+M=D
+//saved return address to temp variable
+@5
+D=A
+@Sys.add12$frame_pointer
+A=M-D
+D=M
+@Sys.add12$retAddr
+M=D
+//save return value
+@R0
+A=M-1
+D=M
+@R2
+A=M
+M=D
+//restore stack pointer
+@R2
+D=M+1
+@R0
+M=D
+//restore that pointer
+@Sys.add12$frame_pointer
+A=M-1
+D=M
+@R4
+M=D
+//restore this pointer
+@2
+D=A
+@Sys.add12$frame_pointer
+A=M-D
+D=M
+@R3
+M=D
+//restore arg pointer
+@3
+D=A
+@Sys.add12$frame_pointer
+A=M-D
+D=M
+@R2
+M=D
+//restore lcl pointer
+@4
+D=A
+@Sys.add12$frame_pointer
+A=M-D
+D=M
+@R1
+M=D
+//return
+@Sys.add12$retAddr
+A=M
+0;JMP
 (END)
 @END
 0;JMP

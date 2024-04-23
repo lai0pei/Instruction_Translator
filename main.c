@@ -3,7 +3,6 @@
 #include "CodeWriter/CodeWrite.h"
 
 char *FILE_NAME;
-
 int main(int argc, char *argv[])
 {
 
@@ -22,14 +21,11 @@ int main(int argc, char *argv[])
             if (advance() > 0)
             {
                 expression();
-                printOpType();
-                // printSegType();
-                // printIndex();
                 translate_instruction();
             }
         }
     }
     end_line();
     clean();
-    return 1;
+    return 0;
 }
